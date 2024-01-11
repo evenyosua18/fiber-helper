@@ -55,8 +55,15 @@ func (h *FiberImpl) GetInfo(ctx interface{}) (info map[string]interface{}) {
 
 type FiberResponseImpl struct{}
 
-func (h *FiberResponseImpl) ResponseSuccess(ctx, response interface{}, code ...interface{}) error {
+// ResponseSuccess
+// 1 code, 2 paginate, 3 filter
+func (h *FiberResponseImpl) ResponseSuccess(ctx, response interface{}, additions ...interface{}) error {
 	f := ctx.(*fiber.Ctx)
+
+	// set response
+	res := HttpResponse{
+		Data: response,
+	}
 
 	//set http status code
 	msg := ErrorResponse{
@@ -64,21 +71,29 @@ func (h *FiberResponseImpl) ResponseSuccess(ctx, response interface{}, code ...i
 		CustomCode:   200,
 	}
 
-	if len(code) == 1 {
-		if err := mapstructure.Decode(code[0], &msg); err != nil {
+	// code
+	if len(additions) <= 1 {
+		if err := mapstructure.Decode(additions[0], &msg); err != nil {
 			return err
 		}
 	}
 
-	f.Status(msg.ResponseCode)
+	// set message
+	res.Code = msg.CustomCode
+	res.Message = msg.ResponseMessage
+
+	// pagination
+	if len(additions) <= 2 {
+		res.Pagination = additions[1]
+	}
+
+	// filters
+	if len(additions) <= 3 {
+		res.Filters = additions[2]
+	}
 
 	//set response
-	return f.JSON(HttpResponse{
-		Code:         msg.CustomCode,
-		Message:      msg.ResponseMessage,
-		ErrorMessage: "",
-		Data:         response,
-	})
+	return f.Status(msg.ResponseCode).JSON(res)
 }
 
 func (h *FiberResponseImpl) ResponseFailed(ctx, code interface{}) error {
@@ -99,5 +114,27 @@ func (h *FiberResponseImpl) ResponseFailed(ctx, code interface{}) error {
 		Code:         msg.CustomCode,
 		Message:      msg.ResponseMessage,
 		ErrorMessage: msg.ErrorMessage,
+	})
+}
+
+func (h *FiberResponseImpl) ResponseErrors(ctx, code interface{}, errs interface{}) error {
+	f := ctx.(*fiber.Ctx)
+
+	//set code response
+	msg := ErrorResponse{}
+
+	if err := mapstructure.Decode(code, &msg); err != nil {
+		return err
+	}
+
+	//set http code
+	f.Status(msg.ResponseCode)
+
+	//set response
+	return f.JSON(HttpResponse{
+		Code:         msg.CustomCode,
+		Message:      msg.ResponseMessage,
+		ErrorMessage: msg.ErrorMessage,
+		Errors:       errs,
 	})
 }
