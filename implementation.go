@@ -83,12 +83,12 @@ func (h *FiberResponseImpl) ResponseSuccess(ctx, response interface{}, additions
 	res.Message = msg.ResponseMessage
 
 	// pagination
-	if len(additions) <= 2 {
+	if len(additions) >= 2 {
 		res.Pagination = additions[1]
 	}
 
 	// filters
-	if len(additions) <= 3 {
+	if len(additions) >= 3 {
 		res.Filters = additions[2]
 	}
 

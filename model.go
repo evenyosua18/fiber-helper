@@ -10,11 +10,11 @@ type HttpResponse struct {
 	// Data will store response for API
 	Data interface{} `json:"data" swaggertype:"string" example:"object result data | will be nil if error"`
 	// Errors will store multiple errors, use for validation
-	Errors interface{} `json:"errors"`
+	Errors interface{} `json:"errors,omitempty"`
 	// Pagination will store all pagination information
-	Pagination interface{} `json:"pagination"`
+	Pagination interface{} `json:"pagination,omitempty"`
 	// Filters will store all filters information
-	Filters interface{} `json:"filters"`
+	Filters interface{} `json:"filters,omitempty"`
 }
 
 type ErrorResponse struct {
