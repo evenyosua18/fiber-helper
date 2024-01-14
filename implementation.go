@@ -72,7 +72,7 @@ func (h *FiberResponseImpl) ResponseSuccess(ctx, response interface{}, additions
 	}
 
 	// code
-	if len(additions) <= 1 {
+	if len(additions) >= 1 {
 		if err := mapstructure.Decode(additions[0], &msg); err != nil {
 			return err
 		}
