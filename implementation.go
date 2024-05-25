@@ -14,21 +14,30 @@ func (h *FiberImpl) GetContextName(ctx interface{}) (context.Context, string) {
 		return nil, ""
 	}
 
-	//to fiber
-	f, ok := ctx.(*fiber.Ctx)
+	//if fiber context
+	if f, ok := ctx.(*fiber.Ctx); ok {
+		//check transaction name, use it if exist
+		transactionName, ok := f.Locals("transaction_name").(string)
 
-	if !ok {
-		return nil, ""
+		if !ok {
+			transactionName = f.Route().Name
+		}
+
+		return f.UserContext(), transactionName
 	}
 
-	//check transaction name, use it if exist
-	transactionName, ok := f.Locals("transaction_name").(string)
+	if c, ok := ctx.(context.Context); ok {
+		//check transaction name, use it if exist
+		transactionName, ok := c.Value("transaction_name").(string)
 
-	if !ok {
-		transactionName = f.Route().Name
+		if !ok {
+			transactionName = "Unknown Parent Name"
+		}
+
+		return c, transactionName
 	}
 
-	return f.UserContext(), transactionName
+	return nil, ""
 }
 
 func (h *FiberImpl) GetInfo(ctx interface{}) (info map[string]interface{}) {
