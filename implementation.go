@@ -105,7 +105,7 @@ func (h *FiberResponseImpl) ResponseSuccess(ctx, response interface{}, additions
 	return f.Status(msg.ResponseCode).JSON(res)
 }
 
-func (h *FiberResponseImpl) ResponseFailed(ctx, code interface{}) error {
+func (h *FiberResponseImpl) ResponseFailed(ctx, code interface{}, errRes error) error {
 	f := ctx.(*fiber.Ctx)
 
 	//set code response
@@ -113,6 +113,11 @@ func (h *FiberResponseImpl) ResponseFailed(ctx, code interface{}) error {
 
 	if err := mapstructure.Decode(code, &msg); err != nil {
 		return err
+	}
+
+	// get msg from error response
+	if errRes != nil && errRes.Error() != "" {
+		msg.ErrorMessage = errRes.Error()
 	}
 
 	//set http code
